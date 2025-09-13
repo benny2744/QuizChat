@@ -1,0 +1,61 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/educational_chatbot/app/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                String @id @default(uuid())
+  topic             String
+  gradeLevel        String
+  sessionType       String
+  conceptsJson      Json
+  learningObjectives String[]
+  assessmentFocus   String[]
+  difficultyProgression String
+  additionalContext String?
+  sessionCode       String @unique
+  createdAt         DateTime @default(now())
+  isActive          Boolean @default(false)
+  startTime         DateTime?
+  endTime           DateTime?
+  
+  studentSessions   StudentSession[]
+  activeParticipants ActiveParticipant[]
+  
+  @@map("sessions")
+}
+
+model StudentSession {
+  id                String @id @default(uuid())
+  sessionId         String
+  studentName       String
+  startTime         DateTime @default(now())
+  endTime           DateTime?
+  chatLogJson       Json @default("[]")
+  understandingScore Float?
+  feedbackSummary   String?
+  
+  session           Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@unique([sessionId, studentName])
+  @@map("student_sessions")
+}
+
+model ActiveParticipant {
+  id                    String @id @default(uuid())
+  sessionId             String
+  studentName           String
+  currentQuestionLevel  String @default("Basic")
+  lastActivity          DateTime @default(now())
+  
+  session               Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@unique([sessionId, studentName])
+  @@map("active_participants")
+}
