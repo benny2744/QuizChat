@@ -3,9 +3,9 @@
 # Educational Chatbot Platform
 
 ## Document Information
-- **Version**: 1.1
+- **Version**: 2.0.2
 - **Last Updated**: September 14, 2025
-- **Architecture Status**: Phase 1 Implementation Complete
+- **Architecture Status**: Phase 2 Complete + Critical Fixes Applied
 - **Technology Stack**: Next.js 14, TypeScript, PostgreSQL, Prisma
 
 ---
@@ -338,6 +338,26 @@ POST   /api/chat                 # Send message & get AI response
 ---
 
 ## Architecture Change Log
+
+### Version 2.0.2 (September 14, 2025) - Critical Session Management Fix
+- **Session Control API Enhancement**: 
+  - Fixed PATCH request validation for session status updates
+  - Improved error handling in session state transitions
+  - Enhanced database field validation for session termination
+- **Reliability Improvements**:
+  - Added transaction handling for concurrent session operations
+  - Implemented proper error recovery mechanisms
+  - Enhanced API response consistency for session management
+- **Production Readiness**:
+  - Session stopping functionality now works reliably
+  - Improved error messaging and logging
+  - Better handling of edge cases in session lifecycle
+
+### Version 2.0.1 (September 14, 2025) - Session Time Tracking
+- **Assessment Engine**: Complete scoring algorithm with understanding metrics
+- **Report Generation**: Individual student reports and CSV export functionality
+- **Time Tracking**: Session duration calculation and "Leave Session" functionality
+- **Database Enhancements**: Added assessment scoring fields and time tracking
 
 ### Version 1.1 (September 14, 2025)
 - **Chat API Enhancement**: Added response style optimization based on session type

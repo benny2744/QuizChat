@@ -3,9 +3,9 @@
 # Educational Chatbot Platform
 
 ## Document Information
-- **Version**: 1.1
+- **Version**: 2.0.2
 - **Last Updated**: September 14, 2025
-- **Implementation Status**: Phase 1 Complete
+- **Implementation Status**: Phase 2 Complete + Critical Fixes
 - **Development Team**: AI-Assisted Development
 
 ---
@@ -814,6 +814,41 @@ export async function GET() {
 ---
 
 ## Technical Change Log
+
+### Version 2.0.2 (September 14, 2025) - Critical Session Management Fixes
+**Backend Changes:**
+- ✅ **Fixed PATCH API Endpoint for Session Updates**:
+  - Resolved 500 errors when updating session `isActive` status
+  - Enhanced field validation to prevent database constraint violations
+  - Improved error handling with specific validation for session state changes
+- ✅ **Enhanced Session Management API**:
+  - Streamlined session update logic to only modify valid fields
+  - Added proper transaction handling for concurrent session operations
+  - Implemented better error recovery mechanisms
+- ✅ **Database Optimization**:
+  - Fixed race conditions in session state transitions
+  - Enhanced query validation for session termination
+  - Improved logging for session management operations
+
+**Frontend Changes:**
+- ✅ **Improved Teacher Dashboard Reliability**:
+  - Session stopping button now works consistently
+  - Enhanced error messaging for failed operations
+  - Better real-time feedback for session state changes
+
+**Production Readiness:**
+- ✅ Session stopping functionality now works reliably
+- ✅ Enhanced system stability for concurrent session management
+- ✅ Improved error handling and user feedback
+
+### Version 2.0.1 (September 14, 2025) - Assessment & Time Tracking
+**Major Features Added:**
+- ✅ Complete assessment scoring engine with understanding score calculation
+- ✅ Individual student report generation (Markdown format)
+- ✅ Session-wide CSV export functionality
+- ✅ Time tracking with session duration calculations
+- ✅ "Leave Session" functionality for proper session termination
+- ✅ Enhanced results dashboard with comprehensive analytics
 
 ### Version 1.1 (September 14, 2025)
 **Backend Changes:**
