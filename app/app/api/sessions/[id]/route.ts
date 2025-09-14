@@ -15,7 +15,13 @@ export async function GET(
       where: { id: params.id },
       include: {
         studentSessions: true,
-        activeParticipants: true
+        activeParticipants: true,
+        _count: {
+          select: { 
+            activeParticipants: true,
+            studentSessions: true
+          }
+        }
       }
     });
 
@@ -28,7 +34,8 @@ export async function GET(
 
     return NextResponse.json({
       ...session,
-      conceptsJson: session.conceptsJson as any
+      conceptsJson: session.conceptsJson as any,
+      participantCount: (session as any)._count?.activeParticipants || 0
     });
   } catch (error) {
     console.error('Error fetching session:', error);
@@ -45,60 +52,116 @@ export async function PATCH(
 ) {
   try {
     const body = await request.json();
+    console.log('PATCH session request body:', body);
     
-    // If ending a session, calculate final participant count and end student sessions
-    let participantCount = body.participantCount;
-    if (body.isActive === false) {
-      const studentSessions = await prisma.studentSession.findMany({
-        where: { sessionId: params.id }
-      });
-      participantCount = studentSessions.length;
-      
-      // End all student sessions that haven't ended yet
-      const currentTime = new Date();
-      await prisma.studentSession.updateMany({
-        where: { 
-          sessionId: params.id,
-          endTime: null
-        },
-        data: { endTime: currentTime }
-      });
+    // First, check if session exists
+    const existingSession = await prisma.session.findUnique({
+      where: { id: params.id }
+    });
 
-      // Clean up active participants
-      await prisma.activeParticipant.deleteMany({
-        where: { sessionId: params.id }
-      });
+    if (!existingSession) {
+      return NextResponse.json(
+        { error: 'Session not found' },
+        { status: 404 }
+      );
     }
+    
+    // Prepare update data with only valid Session model fields
+    const updateData: any = {};
+    
+    // Handle isActive changes
+    if (typeof body.isActive === 'boolean') {
+      updateData.isActive = body.isActive;
+      
+      // If ending a session, cleanup and set end times
+      if (body.isActive === false) {
+        const currentTime = new Date();
+        updateData.endTime = currentTime;
+        
+        try {
+          // End all student sessions that haven't ended yet
+          await prisma.studentSession.updateMany({
+            where: { 
+              sessionId: params.id,
+              endTime: null
+            },
+            data: { endTime: currentTime }
+          });
+
+          // Clean up active participants
+          await prisma.activeParticipant.deleteMany({
+            where: { sessionId: params.id }
+          });
+          
+          console.log('Successfully cleaned up student sessions and active participants');
+        } catch (cleanupError) {
+          console.error('Error during cleanup:', cleanupError);
+          // Continue with session update even if cleanup fails
+        }
+      }
+      
+      // If activating a session, set start time if not already set
+      if (body.isActive === true && !existingSession.startTime) {
+        updateData.startTime = new Date();
+      }
+    }
+
+    // Add other valid fields that might be in the body
+    if (body.topic) updateData.topic = body.topic;
+    if (body.gradeLevel) updateData.gradeLevel = body.gradeLevel;
+    if (body.sessionType) updateData.sessionType = body.sessionType;
+    if (body.conceptsJson) updateData.conceptsJson = body.conceptsJson;
+    if (body.learningObjectives) updateData.learningObjectives = body.learningObjectives;
+    if (body.assessmentFocus) updateData.assessmentFocus = body.assessmentFocus;
+    if (body.difficultyProgression) updateData.difficultyProgression = body.difficultyProgression;
+    if (body.additionalContext !== undefined) updateData.additionalContext = body.additionalContext;
+    if (body.startTime) updateData.startTime = new Date(body.startTime);
+    if (body.endTime) updateData.endTime = new Date(body.endTime);
+
+    console.log('Update data prepared:', updateData);
     
     // Update the session
-    const updateData: any = {
-      ...body,
-      ...(participantCount !== undefined && { participantCount })
-    };
-
-    // Set start time if activating and no start time exists
-    if (body.isActive === true && !body.startTime) {
-      updateData.startTime = new Date();
-    }
-
-    // Set end time if deactivating and no end time exists
-    if (body.isActive === false && !body.endTime) {
-      updateData.endTime = new Date();
-    }
-    
     const session = await prisma.session.update({
       where: { id: params.id },
       data: updateData
     });
 
+    console.log('Session updated successfully:', session.id);
+
+    // Get updated session with counts for response
+    const updatedSession = await prisma.session.findUnique({
+      where: { id: params.id },
+      include: {
+        _count: {
+          select: { 
+            activeParticipants: true,
+            studentSessions: true
+          }
+        }
+      }
+    });
+
+    if (!updatedSession) {
+      return NextResponse.json(
+        { error: 'Session not found after update' },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
-      ...session,
-      conceptsJson: session.conceptsJson as any
+      ...updatedSession,
+      conceptsJson: updatedSession.conceptsJson as any,
+      participantCount: (updatedSession as any)._count?.activeParticipants || 0
     });
   } catch (error) {
     console.error('Error updating session:', error);
+    console.error('Error details:', {
+      name: (error as Error).name,
+      message: (error as Error).message,
+      stack: (error as Error).stack
+    });
     return NextResponse.json(
-      { error: 'Failed to update session status' },
+      { error: 'Failed to update session status', details: (error as Error).message },
       { status: 500 }
     );
   }
