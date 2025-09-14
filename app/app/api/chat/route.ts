@@ -236,6 +236,14 @@ Student's message: ${message}`;
 
   } catch (error) {
     console.error('Error in chat API:', error);
-    return new Response('Internal server error', { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    console.error('Error details:', errorMessage);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error', 
+      details: errorMessage 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
