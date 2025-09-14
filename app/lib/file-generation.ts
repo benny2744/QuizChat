@@ -60,6 +60,10 @@ ${getImprovementRecommendations(metrics)}
 ### Next Steps
 ${getNextStepRecommendations(metrics, session.sessionType)}
 
+## Complete Chat Conversation
+
+${formatChatLogForReport(chatLog)}
+
 ---
 *Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}*
 `;
@@ -254,4 +258,23 @@ function getNextStepRecommendations(metrics: any, sessionType: string): string {
   nextSteps.push('Discuss results with instructor for personalized guidance');
   
   return nextSteps.map(step => `- ${step}`).join('\n');
+}
+
+function formatChatLogForReport(chatLog: ChatMessage[]): string {
+  if (!chatLog || chatLog.length === 0) {
+    return 'No conversation recorded for this session.';
+  }
+  
+  let formattedLog = '';
+  
+  chatLog.forEach((message, index) => {
+    const timestamp = new Date(message.timestamp).toLocaleTimeString();
+    const role = message.role === 'user' ? 'Student' : 'AI Tutor';
+    const levelInfo = message.questionLevel ? ` (${message.questionLevel} Level)` : '';
+    
+    formattedLog += `### ${role}${levelInfo} - ${timestamp}\n`;
+    formattedLog += `${message.content}\n\n`;
+  });
+  
+  return formattedLog.trim();
 }

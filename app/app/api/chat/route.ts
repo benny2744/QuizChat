@@ -41,6 +41,14 @@ export async function POST(request: NextRequest) {
     const existingChatLog = studentSession.chatLogJson as any[] || [];
     const conversationLength = existingChatLog.filter(msg => msg.role === 'user').length;
 
+    // Count advanced questions answered
+    const advancedResponses = existingChatLog.filter(msg => 
+      msg.role === 'user' && msg.questionLevel === 'Advanced'
+    ).length;
+
+    // Check if student has mastered the topic (3+ advanced answers)
+    const hasMasteredTopic = advancedResponses >= 3;
+    
     // Determine if we should progress to the next level
     let nextLevel = currentLevel;
     if (currentLevel === 'Basic' && conversationLength >= 2) {
@@ -65,7 +73,28 @@ RESPONSE STYLE: Keep responses concise but informative:
 - Clear and focused explanations`;
     }
 
-    const systemMessage = `You are an educational AI tutor for a high school business class. You adapt your questioning style based on the current difficulty level and student progress.
+    // Create different system message based on student's mastery status
+    let systemMessage = '';
+    
+    if (hasMasteredTopic) {
+      systemMessage = `You are an educational AI tutor for a high school business class. The student has demonstrated excellent mastery by successfully answering 3 or more advanced-level questions about ${session.topic}.
+
+IMPORTANT: This student has achieved mastery. Your response should:
+1. Congratulate them on their excellent understanding of ${session.topic}
+2. Acknowledge their progression through all difficulty levels
+3. Provide a brief, positive summary of what they've learned
+4. Encourage them to "leave the session" now that they've demonstrated mastery
+5. DO NOT ask any more questions - they have completed the assessment successfully
+
+Session Details:
+- Topic: ${session.topic}
+- Grade Level: ${session.gradeLevel}
+- Advanced Questions Answered: ${advancedResponses}
+- Student has achieved mastery level
+
+Student's final message: ${message}`;
+    } else {
+      systemMessage = `You are an educational AI tutor for a high school business class. You adapt your questioning style based on the current difficulty level and student progress.
 
 Session Details:
 - Topic: ${session.topic}
@@ -73,6 +102,7 @@ Session Details:
 - Session Type: ${session.sessionType}
 - Current Question Level: ${currentLevel}
 - Messages from Student: ${conversationLength}
+- Advanced Questions Answered: ${advancedResponses}/3
 
 Core Concepts to Assess:
 ${concepts.map(c => `- ${c.name}${c.definition ? ': ' + c.definition : ''}${c.examples && c.examples.length > 0 ? '\n  Examples: ' + c.examples.join(', ') : ''}${c.commonMisconceptions && c.commonMisconceptions.length > 0 ? '\n  Common Misconceptions: ' + c.commonMisconceptions.join(', ') : ''}`).join('\n')}
@@ -97,6 +127,7 @@ Instructions:
 5. Be concise - avoid unnecessary elaboration
 
 Student's message: ${message}`;
+    }
 
     // Call LLM API without streaming to avoid duplication issues
     const response = await fetch('https://apps.abacus.ai/v1/chat/completions', {
@@ -168,7 +199,9 @@ Student's message: ${message}`;
 
     return new Response(JSON.stringify({ 
       message: assistantMessage,
-      questionLevel: nextLevel 
+      questionLevel: nextLevel,
+      hasMasteredTopic: hasMasteredTopic,
+      advancedQuestionsAnswered: advancedResponses
     }), {
       headers: {
         'Content-Type': 'application/json'

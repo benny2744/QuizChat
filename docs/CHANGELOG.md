@@ -7,6 +7,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2025-09-14
+
+### 🎯 MAJOR ASSESSMENT & UX IMPROVEMENTS
+
+#### Fixed - Core Assessment Issues
+
+**📊 Scoring System Overhaul**
+- ✅ **RESOLVED: Broken Assessment Scoring**
+  - Completely redesigned understanding score algorithm that was stuck at 40-50 points
+  - New level-based scoring: Basic (40-59), Scenario (60-74), Advanced (75-100)
+  - Students answering 3+ advanced questions now correctly score >90 points
+- ✅ **Enhanced Response Quality Metrics**
+  - Fixed response quality scoring to accurately measure relevance and depth
+  - Rewards detailed, topic-relevant answers with high scores (80-100)
+  - Penalizes generic or insufficient responses appropriately
+- ✅ **Complete Chat Logs in Reports**
+  - Student reports now include full conversation transcripts after structured feedback
+  - Better formatting with timestamps and difficulty level indicators
+  - Enhanced conversation highlights section
+
+#### Added - Smart Learning Completion
+
+**🎓 Mastery Detection System**
+- ✅ **Automatic Topic Mastery Recognition**
+  - System detects when students have answered 3+ advanced questions correctly
+  - AI automatically stops asking questions upon mastery achievement
+  - Congratulatory messages celebrate student success
+- ✅ **Intelligent Session Termination**
+  - Students who demonstrate mastery get prompted to leave the session
+  - Input fields disabled for completed students with clear guidance
+  - Green success alerts with prominent "Leave Session" buttons
+- ✅ **Enhanced Chat AI Behavior**
+  - AI provides celebration messages instead of more questions after mastery
+  - Clear progression tracking (Advanced Questions Answered: X/3)
+  - Adaptive response style based on student achievement status
+
+#### Impact Assessment
+- **Learning Experience**: Students now get proper recognition for mastery achievement
+- **Assessment Accuracy**: Scoring reflects actual understanding levels instead of arbitrary 40-50 range
+- **Teacher Insights**: Reports include complete conversation context for better evaluation
+- **Classroom Flow**: Natural completion process encourages students to leave when ready
+
+---
+
 ## [2.0.2] - 2025-09-14
 
 ### 🔧 CRITICAL HOTFIX - Session Stopping Functionality

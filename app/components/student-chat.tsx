@@ -36,6 +36,8 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
   const [isLoading, setIsLoading] = useState(false);
   const [currentLevel, setCurrentLevel] = useState<string>('Basic');
   const [isConnected, setIsConnected] = useState(true);
+  const [hasMasteredTopic, setHasMasteredTopic] = useState(false);
+  const [advancedQuestionsAnswered, setAdvancedQuestionsAnswered] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -105,6 +107,15 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
       if (data.questionLevel && data.questionLevel !== currentLevel) {
         setCurrentLevel(data.questionLevel);
       }
+      
+      // Update mastery status
+      if (data.hasMasteredTopic !== undefined) {
+        setHasMasteredTopic(data.hasMasteredTopic);
+      }
+      
+      if (data.advancedQuestionsAnswered !== undefined) {
+        setAdvancedQuestionsAnswered(data.advancedQuestionsAnswered);
+      }
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -118,6 +129,23 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
       setIsConnected(false);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLeaveSession = async () => {
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentName })
+      });
+
+      if (response.ok) {
+        // Redirect to success page or show success message
+        window.location.href = '/student';
+      }
+    } catch (error) {
+      console.error('Error leaving session:', error);
     }
   };
 
@@ -166,6 +194,29 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
           <AlertCircle className="h-4 w-4 text-yellow-600" />
           <AlertDescription className="text-yellow-700">
             Connection issue detected. Please refresh the page if problems persist.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Mastery Achievement Alert */}
+      {hasMasteredTopic && (
+        <Alert className="mb-4 bg-green-50 border-green-200">
+          <Target className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Congratulations! 🎉</strong> You've mastered the topic by answering {advancedQuestionsAnswered} advanced questions correctly.
+                <br />
+                <span className="text-sm">You can now leave the session as you've demonstrated excellent understanding.</span>
+              </div>
+              <Button 
+                onClick={handleLeaveSession}
+                className="ml-4 bg-green-600 hover:bg-green-700"
+                size="sm"
+              >
+                Leave Session
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       )}
@@ -250,14 +301,14 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Type your response or ask a question..."
-              disabled={isLoading}
+              placeholder={hasMasteredTopic ? "You've mastered the topic! Please use the 'Leave Session' button above." : "Type your response or ask a question..."}
+              disabled={isLoading || hasMasteredTopic}
               className="flex-1"
               maxLength={500}
             />
             <Button
               type="submit"
-              disabled={isLoading || !inputMessage.trim()}
+              disabled={isLoading || !inputMessage.trim() || hasMasteredTopic}
               className="bg-green-600 hover:bg-green-700"
             >
               <Send className="h-4 w-4" />
