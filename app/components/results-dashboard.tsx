@@ -26,6 +26,9 @@ interface AssessmentSummary {
     score: number | null;
     feedback: string | null;
     messageCount: number;
+    duration: number | null;
+    startTime?: Date;
+    endTime?: Date;
   }>;
 }
 
@@ -345,9 +348,11 @@ export function ResultsDashboard({ sessions }: ResultsDashboardProps) {
                             <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
                               <div>
                                 <span className="font-medium">{student.name}</span>
-                                <span className="text-sm text-gray-500 ml-2">
-                                  ({student.messageCount} messages)
-                                </span>
+                                <div className="text-sm text-gray-500">
+                                  <span>{student.messageCount} messages</span>
+                                  <span className="mx-2">•</span>
+                                  <span>{student.duration !== null ? `${student.duration} min` : 'N/A'}</span>
+                                </div>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <Badge variant={student.score && student.score >= 70 ? "default" : "secondary"}>

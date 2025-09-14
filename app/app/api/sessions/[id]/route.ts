@@ -46,32 +46,49 @@ export async function PATCH(
   try {
     const body = await request.json();
     
-    // If ending a session, calculate final participant count
+    // If ending a session, calculate final participant count and end student sessions
     let participantCount = body.participantCount;
-    if (body.isActive === false && !body.endTime) {
+    if (body.isActive === false) {
       const studentSessions = await prisma.studentSession.findMany({
         where: { sessionId: params.id }
       });
       participantCount = studentSessions.length;
       
       // End all student sessions that haven't ended yet
+      const currentTime = new Date();
       await prisma.studentSession.updateMany({
         where: { 
           sessionId: params.id,
           endTime: null
         },
-        data: { endTime: new Date() }
+        data: { endTime: currentTime }
       });
+
+      // Clean up active participants
+      await prisma.activeParticipant.deleteMany({
+        where: { sessionId: params.id }
+      });
+    }
+    
+    // Update the session
+    const updateData: any = {
+      ...body,
+      ...(participantCount !== undefined && { participantCount })
+    };
+
+    // Set start time if activating and no start time exists
+    if (body.isActive === true && !body.startTime) {
+      updateData.startTime = new Date();
+    }
+
+    // Set end time if deactivating and no end time exists
+    if (body.isActive === false && !body.endTime) {
+      updateData.endTime = new Date();
     }
     
     const session = await prisma.session.update({
       where: { id: params.id },
-      data: {
-        ...body,
-        ...(participantCount !== undefined && { participantCount }),
-        ...(body.isActive === true && !body.startTime ? { startTime: new Date() } : {}),
-        ...(body.isActive === false && !body.endTime ? { endTime: new Date() } : {})
-      }
+      data: updateData
     });
 
     return NextResponse.json({
@@ -81,7 +98,7 @@ export async function PATCH(
   } catch (error) {
     console.error('Error updating session:', error);
     return NextResponse.json(
-      { error: 'Failed to update session' },
+      { error: 'Failed to update session status' },
       { status: 500 }
     );
   }

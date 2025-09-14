@@ -7,6 +7,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2025-09-14
+
+### 🔧 HOTFIX - Session Management & Time Tracking
+
+#### Fixed - Critical Session Issues
+
+**⏱️ Session Time Tracking**
+- ✅ **Fixed "Failed to update session status" Error**
+  - Resolved database synchronization issues when stopping sessions
+  - Improved error handling and transaction management
+  - Enhanced API response messaging for better debugging
+- ✅ **Fixed Duration Display Issues**
+  - Corrected "N/A" showing for student chat times in results dashboard
+  - Fixed CSV export duration column showing "N/A" instead of actual times
+  - Implemented proper endTime recording when students leave sessions
+- ✅ **Enhanced Session Leave Functionality**
+  - Added new `/api/sessions/[id]/leave` endpoint for proper session exit
+  - Implemented automatic session leave tracking on browser close/navigation
+  - Added user-friendly "Leave Session" button with confirmation
+  - Fixed duplicate function declarations causing TypeScript errors
+
+**📊 Improved Results & Reporting**
+- ✅ **Updated Results Dashboard**
+  - Now displays individual student chat duration alongside message count
+  - Fixed assessment summary API to include duration calculations
+  - Enhanced TypeScript interfaces for proper duration property support
+- ✅ **Corrected File Generation**
+  - Fixed CSV generation to show "N/A" for incomplete sessions vs "0"
+  - Updated markdown report generation with accurate timing data
+  - Enhanced file download functionality with proper duration formatting
+
+#### Technical Improvements
+- Fixed TypeScript compilation errors related to duration properties
+- Updated AssessmentSummary interface to include all timing fields
+- Enhanced database cleanup procedures for session termination
+- Implemented proper null handling for incomplete session timings
+
 ## [2.0.0] - 2025-09-14
 
 ### 🎯 PHASE 2 COMPLETE - Assessment & Reporting System

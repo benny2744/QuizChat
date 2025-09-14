@@ -57,6 +57,68 @@ export function StudentInterface() {
     }
   }, [sessionInfo, step]);
 
+  // Handle leaving session when component unmounts or user navigates away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (sessionInfo?.id && studentName && step === 'chat') {
+        // Send leave request synchronously
+        navigator.sendBeacon(`/api/sessions/${sessionInfo.id}/leave`, 
+          JSON.stringify({ studentName })
+        );
+      }
+    };
+
+    const handleUnload = () => {
+      if (sessionInfo?.id && studentName && step === 'chat') {
+        handleLeaveSession();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('unload', handleUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('unload', handleUnload);
+      // Also call leave when component unmounts
+      if (sessionInfo?.id && studentName && step === 'chat') {
+        handleLeaveSession();
+      }
+    };
+  }, [sessionInfo, studentName, step]);
+
+  const handleLeaveSession = async () => {
+    if (!sessionInfo?.id || !studentName) return;
+    
+    try {
+      await fetch(`/api/sessions/${sessionInfo.id}/leave`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentName })
+      });
+      
+      toast({
+        title: "Session Left",
+        description: "Your session time has been recorded. Thank you for participating!"
+      });
+      
+      // Reset the interface
+      setStep('entry');
+      setStudentName('');
+      setSessionCode('');
+      setSessionInfo(null);
+      setSessionTimer('00:00');
+      
+    } catch (error) {
+      console.error('Error leaving session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to leave session properly. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleJoinSession = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -123,15 +185,7 @@ export function StudentInterface() {
     }
   };
 
-  const handleLeaveSession = () => {
-    if (confirm('Are you sure you want to leave this session? Your progress will be saved.')) {
-      setStep('entry');
-      setSessionInfo(null);
-      setStudentName('');
-      setSessionCode('');
-      setError('');
-    }
-  };
+
 
   if (step === 'chat' && sessionInfo) {
     return (

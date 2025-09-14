@@ -13,7 +13,7 @@ export function generateStudentMarkdownReport(data: StudentReportData): string {
   const { student, session, metrics, chatLog } = data;
   const sessionDate = new Date(session.createdAt).toLocaleDateString();
   const duration = student.endTime && student.startTime ? 
-    Math.round((new Date(student.endTime).getTime() - new Date(student.startTime).getTime()) / 60000) : 'N/A';
+    `${Math.round((new Date(student.endTime).getTime() - new Date(student.startTime).getTime()) / 60000)}` : 'N/A';
 
   const report = `# Student Learning Report
 
@@ -96,7 +96,7 @@ export function generateSessionCSV(sessionData: {
     const userMessages = chatLog.filter(msg => msg.role === 'user');
     
     const duration = student.endTime && student.startTime ? 
-      Math.round((new Date(student.endTime).getTime() - new Date(student.startTime).getTime()) / 60000) : 0;
+      Math.round((new Date(student.endTime).getTime() - new Date(student.startTime).getTime()) / 60000) : null;
     
     const conceptMasteryAvg = Object.values(metrics.conceptMastery as {[key: string]: number})
       .reduce((sum, score) => sum + score, 0) / Object.keys(metrics.conceptMastery).length || 0;
@@ -105,7 +105,7 @@ export function generateSessionCSV(sessionData: {
       student.studentName,
       student.startTime?.toLocaleString() || '',
       student.endTime?.toLocaleString() || '',
-      duration.toString(),
+      duration !== null ? duration.toString() : 'N/A',
       metrics.understandingScore.toString(),
       metrics.engagementScore.toString(),
       metrics.responseQuality.toString(),

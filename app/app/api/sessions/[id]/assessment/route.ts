@@ -107,12 +107,23 @@ export async function GET(
         .filter(s => s.understandingScore !== null)
         .reduce((sum, s) => sum + (s.understandingScore || 0), 0) / 
         (session.studentSessions.filter(s => s.understandingScore !== null).length || 1),
-      students: session.studentSessions.map(s => ({
-        name: s.studentName,
-        score: s.understandingScore,
-        feedback: s.feedbackSummary,
-        messageCount: (s.chatLogJson as unknown as ChatMessage[] || []).filter(m => m.role === 'user').length
-      }))
+      students: session.studentSessions.map(s => {
+        const chatLog = s.chatLogJson as unknown as ChatMessage[] || [];
+        const userMessageCount = chatLog.filter(m => m.role === 'user').length;
+        const duration = s.endTime && s.startTime 
+          ? Math.round((new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000)
+          : null;
+          
+        return {
+          name: s.studentName,
+          score: s.understandingScore,
+          feedback: s.feedbackSummary,
+          messageCount: userMessageCount,
+          duration: duration,
+          startTime: s.startTime,
+          endTime: s.endTime
+        };
+      })
     };
 
     return NextResponse.json(assessmentSummary);

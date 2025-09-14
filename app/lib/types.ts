@@ -60,6 +60,26 @@ export interface ChatMessage {
   questionLevel?: string;
 }
 
+export interface StudentSummary {
+  name: string;
+  score: number | null;
+  feedback: string | null;
+  messageCount: number;
+  duration: number | null;
+  startTime?: Date;
+  endTime?: Date;
+}
+
+export interface AssessmentSummary {
+  sessionId: string;
+  topic: string;
+  sessionType: string;
+  totalStudents: number;
+  completedAssessments: number;
+  averageScore: number;
+  students: StudentSummary[];
+}
+
 export interface SessionStats {
   totalParticipants: number;
   activeParticipants: number;
