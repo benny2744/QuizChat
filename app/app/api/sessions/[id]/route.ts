@@ -46,10 +46,29 @@ export async function PATCH(
   try {
     const body = await request.json();
     
+    // If ending a session, calculate final participant count
+    let participantCount = body.participantCount;
+    if (body.isActive === false && !body.endTime) {
+      const studentSessions = await prisma.studentSession.findMany({
+        where: { sessionId: params.id }
+      });
+      participantCount = studentSessions.length;
+      
+      // End all student sessions that haven't ended yet
+      await prisma.studentSession.updateMany({
+        where: { 
+          sessionId: params.id,
+          endTime: null
+        },
+        data: { endTime: new Date() }
+      });
+    }
+    
     const session = await prisma.session.update({
       where: { id: params.id },
       data: {
         ...body,
+        ...(participantCount !== undefined && { participantCount }),
         ...(body.isActive === true && !body.startTime ? { startTime: new Date() } : {}),
         ...(body.isActive === false && !body.endTime ? { endTime: new Date() } : {})
       }
