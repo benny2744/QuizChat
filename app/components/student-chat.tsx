@@ -90,57 +90,22 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
         throw new Error('Failed to send message');
       }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let assistantMessage = '';
-      let messageId = (Date.now() + 1).toString();
+      const data = await response.json();
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: data.message,
+        timestamp: new Date(),
+        questionLevel: data.questionLevel || currentLevel
+      };
 
-      if (reader) {
-        const assistantMessageObj: ChatMessage = {
-          id: messageId,
-          role: 'assistant',
-          content: '',
-          timestamp: new Date(),
-          questionLevel: currentLevel
-        };
-
-        setMessages(prev => [...prev, assistantMessageObj]);
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') {
-                setIsLoading(false);
-                return;
-              }
-
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices?.[0]?.delta?.content || '';
-                if (content) {
-                  assistantMessage += content;
-                  setMessages(prev => 
-                    prev.map(msg => 
-                      msg.id === messageId 
-                        ? { ...msg, content: assistantMessage }
-                        : msg
-                    )
-                  );
-                }
-              } catch (e) {
-                // Skip invalid JSON
-              }
-            }
-          }
-        }
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      // Update current level if it changed
+      if (data.questionLevel && data.questionLevel !== currentLevel) {
+        setCurrentLevel(data.questionLevel);
       }
+
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages(prev => [...prev, {

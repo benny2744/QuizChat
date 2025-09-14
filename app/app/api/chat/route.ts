@@ -37,16 +37,29 @@ export async function POST(request: NextRequest) {
     const assessmentFocus = session.assessmentFocus;
     const currentLevel = participant?.currentQuestionLevel || 'Basic';
 
+    // Get the conversation history to determine progression
+    const existingChatLog = studentSession.chatLogJson as any[] || [];
+    const conversationLength = existingChatLog.filter(msg => msg.role === 'user').length;
+
+    // Determine if we should progress to the next level
+    let nextLevel = currentLevel;
+    if (currentLevel === 'Basic' && conversationLength >= 2) {
+      nextLevel = 'Scenario';
+    } else if (currentLevel === 'Scenario' && conversationLength >= 4) {
+      nextLevel = 'Advanced';
+    }
+
     // Create system message for the chatbot
-    const systemMessage = `You are an educational AI tutor for a high school business class. 
+    const systemMessage = `You are an educational AI tutor for a high school business class. You adapt your questioning style based on the current difficulty level and student progress.
 
 Session Details:
 - Topic: ${session.topic}
 - Grade Level: ${session.gradeLevel}
 - Session Type: ${session.sessionType}
 - Current Question Level: ${currentLevel}
+- Messages from Student: ${conversationLength}
 
-Core Concepts:
+Core Concepts to Assess:
 ${concepts.map(c => `- ${c.name}: ${c.definition}\n  Examples: ${c.examples.join(', ')}\n  Common Misconceptions: ${c.commonMisconceptions.join(', ')}`).join('\n')}
 
 Learning Objectives:
@@ -55,18 +68,22 @@ ${learningObjectives.map(obj => `- ${obj}`).join('\n')}
 Assessment Focus Areas:
 ${assessmentFocus.map(focus => `- ${focus}`).join('\n')}
 
+DIFFICULTY LEVEL GUIDELINES:
+**Basic Level**: Focus on definitions and simple recall. Ask "What is..." questions.
+**Scenario Level**: Present real-world situations. Ask "What would you do if..." questions.  
+**Advanced Level**: Challenge analysis and evaluation. Ask "Why do you think..." questions.
+
 Instructions:
 1. Keep responses educational and age-appropriate for ${session.gradeLevel}
 2. Focus on the current difficulty level: ${currentLevel}
 3. Ask engaging questions that test understanding
 4. Provide clear explanations with real-world examples
-5. Encourage critical thinking
-6. Keep responses concise but informative (2-3 paragraphs max)
-7. End with a follow-up question to continue the conversation
+5. Keep responses concise but informative (1-2 paragraphs max)
+6. Always end with a specific follow-up question
 
 Student's message: ${message}`;
 
-    // Call LLM API with streaming
+    // Call LLM API without streaming to avoid duplication issues
     const response = await fetch('https://apps.abacus.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -79,7 +96,7 @@ Student's message: ${message}`;
           { role: 'system', content: systemMessage },
           { role: 'user', content: message }
         ],
-        stream: true,
+        stream: false,
         max_tokens: 1000,
         temperature: 0.7
       })
@@ -89,6 +106,9 @@ Student's message: ${message}`;
       throw new Error(`LLM API error: ${response.statusText}`);
     }
 
+    const data = await response.json();
+    const assistantMessage = data.choices?.[0]?.message?.content || 'I apologize, but I encountered an issue processing your message. Please try again.';
+
     // Update participant activity
     await prisma.activeParticipant.update({
       where: {
@@ -97,79 +117,46 @@ Student's message: ${message}`;
       data: { lastActivity: new Date() }
     });
 
-    // Create streaming response
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        const encoder = new TextEncoder();
-        let fullResponse = '';
-
-        try {
-          while (true) {
-            const { done, value } = await reader?.read() ?? { done: true, value: undefined };
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') {
-                  // Save chat log to database
-                  const chatLog = studentSession.chatLogJson as any[] || [];
-                  chatLog.push(
-                    { 
-                      id: Date.now().toString(), 
-                      role: 'user', 
-                      content: message, 
-                      timestamp: new Date(),
-                      questionLevel: currentLevel 
-                    },
-                    { 
-                      id: (Date.now() + 1).toString(), 
-                      role: 'assistant', 
-                      content: fullResponse, 
-                      timestamp: new Date(),
-                      questionLevel: currentLevel 
-                    }
-                  );
-
-                  await prisma.studentSession.update({
-                    where: { id: studentSession.id },
-                    data: { chatLogJson: chatLog }
-                  });
-
-                  controller.close();
-                  return;
-                }
-
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices?.[0]?.delta?.content || '';
-                  if (content) {
-                    fullResponse += content;
-                  }
-                  controller.enqueue(encoder.encode(chunk));
-                } catch (e) {
-                  // Skip invalid JSON
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Stream error:', error);
-          controller.error(error);
-        }
+    // Save chat log to database
+    const chatLog = studentSession.chatLogJson as any[] || [];
+    chatLog.push(
+      { 
+        id: Date.now().toString(), 
+        role: 'user', 
+        content: message, 
+        timestamp: new Date(),
+        questionLevel: currentLevel 
+      },
+      { 
+        id: (Date.now() + 1).toString(), 
+        role: 'assistant', 
+        content: assistantMessage, 
+        timestamp: new Date(),
+        questionLevel: currentLevel 
       }
+    );
+
+    await prisma.studentSession.update({
+      where: { id: studentSession.id },
+      data: { chatLogJson: chatLog }
     });
 
-    return new Response(stream, {
+    // Update participant's level if it progressed
+    if (nextLevel !== currentLevel) {
+      await prisma.activeParticipant.update({
+        where: {
+          sessionId_studentName: { sessionId, studentName }
+        },
+        data: { currentQuestionLevel: nextLevel }
+      });
+    }
+
+    return new Response(JSON.stringify({ 
+      message: assistantMessage,
+      questionLevel: nextLevel 
+    }), {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
+        'Content-Type': 'application/json'
       }
     });
 
