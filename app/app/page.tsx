@@ -21,9 +21,9 @@ export default function Home() {
               </div>
             </div>
             <nav className="flex space-x-4">
-              <Link href="/teacher">
+              <Link href="/auth/signin">
                 <Button className="bg-blue-600 hover:bg-blue-700">
-                  Teacher Dashboard
+                  Teacher Login
                 </Button>
               </Link>
               <Link href="/student">
@@ -41,15 +41,15 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Transform Business Education with 
+            Transform Education with 
             <span className="text-blue-600"> AI-Powered Learning</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Create dynamic quiz sessions for high school business classes. 
+            Create dynamic learning sessions for any subject. 
             Support 20-30 concurrent students with progressive difficulty questioning and real-time assessment.
           </p>
           <div className="flex justify-center space-x-4">
-            <Link href="/teacher">
+            <Link href="/auth/signin">
               <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
                 <Users className="mr-2 h-5 w-5" />
                 Start Teaching

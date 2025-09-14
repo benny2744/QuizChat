@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { generateSessionCode } from '@/lib/utils';
 import { SessionFormData } from '@/lib/types';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +12,15 @@ const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const includeStats = searchParams.get('includeStats') === 'true';
 
@@ -17,6 +28,7 @@ export async function GET(request: NextRequest) {
     
     if (includeStats) {
       sessions = await prisma.session.findMany({
+        where: { teacherId: session.user.id },
         include: {
           _count: {
             select: { 
@@ -29,6 +41,7 @@ export async function GET(request: NextRequest) {
       });
     } else {
       sessions = await prisma.session.findMany({
+        where: { teacherId: session.user.id },
         orderBy: { createdAt: 'desc' }
       });
     }
@@ -51,6 +64,30 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || !session.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check session limit (10 sessions per teacher)
+    const sessionCount = await prisma.session.count({
+      where: { teacherId: session.user.id }
+    });
+
+    if (sessionCount >= 10) {
+      return NextResponse.json(
+        { 
+          error: 'Session limit reached',
+          message: 'You have reached the maximum limit of 10 sessions. Please delete some existing sessions to create new ones.'
+        },
+        { status: 400 }
+      );
+    }
+
     const body: SessionFormData = await request.json();
     
     let sessionCode = generateSessionCode();
@@ -60,8 +97,9 @@ export async function POST(request: NextRequest) {
       sessionCode = generateSessionCode();
     }
 
-    const session = await prisma.session.create({
+    const newSession = await prisma.session.create({
       data: {
+        teacherId: session.user.id,
         topic: body.topic,
         gradeLevel: body.gradeLevel,
         sessionType: body.sessionType,
@@ -75,8 +113,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      ...session,
-      conceptsJson: session.conceptsJson as any
+      ...newSession,
+      conceptsJson: newSession.conceptsJson as any
     });
   } catch (error) {
     console.error('Error creating session:', error);

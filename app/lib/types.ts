@@ -1,3 +1,11 @@
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface SessionFormData {
   topic: string;
   gradeLevel: string;
@@ -17,6 +25,7 @@ export interface CoreConcept {
 
 export interface SessionData {
   id: string;
+  teacherId: string;
   topic: string;
   gradeLevel: string;
   sessionType: string;
@@ -31,6 +40,7 @@ export interface SessionData {
   startTime?: Date;
   endTime?: Date;
   participantCount?: number;
+  teacher?: User;
 }
 
 export interface StudentSessionData {

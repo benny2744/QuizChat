@@ -223,7 +223,35 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
 
       {/* Messages Area */}
       <Card className="flex-1 flex flex-col">
-        <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+        <CardContent 
+          className="flex-1 overflow-y-auto p-4 space-y-4 select-none"
+          style={{
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+            MozUserSelect: 'none',
+            msUserSelect: 'none'
+          }}
+          onCopy={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+          onCut={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+          onDragStart={(e) => {
+            e.preventDefault();
+            return false;
+          }}
+        >
           {messages.map((message) => (
             <div
               key={message.id}
@@ -305,6 +333,29 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
               disabled={isLoading || hasMasteredTopic}
               className="flex-1"
               maxLength={500}
+              onPaste={(e) => {
+                e.preventDefault();
+                return false;
+              }}
+              onCopy={(e) => {
+                e.preventDefault();
+                return false;
+              }}
+              onCut={(e) => {
+                e.preventDefault();
+                return false;
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                return false;
+              }}
+              onKeyDown={(e) => {
+                // Prevent Ctrl+V, Ctrl+C, Ctrl+X
+                if (e.ctrlKey && (e.key === 'v' || e.key === 'c' || e.key === 'x')) {
+                  e.preventDefault();
+                  return false;
+                }
+              }}
             />
             <Button
               type="submit"
