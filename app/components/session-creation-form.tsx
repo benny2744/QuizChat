@@ -32,7 +32,7 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
     topic: '',
     gradeLevel: '',
     sessionType: '',
-    concepts: [{ name: '', definition: '', examples: [''], commonMisconceptions: [''] }],
+    concepts: [{ name: '', examples: [''], commonMisconceptions: [''] }],
     learningObjectives: [''],
     assessmentFocus: [],
     difficultyProgression: '',
@@ -42,7 +42,7 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
   const addConcept = () => {
     setFormData(prev => ({
       ...prev,
-      concepts: [...prev.concepts, { name: '', definition: '', examples: [''], commonMisconceptions: [''] }]
+      concepts: [...prev.concepts, { name: '', examples: [''], commonMisconceptions: [''] }]
     }));
   };
 
@@ -131,10 +131,10 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
       return;
     }
 
-    if (formData.concepts.some(c => !c.name.trim() || !c.definition.trim())) {
+    if (formData.concepts.some(c => !c.name.trim())) {
       toast({
-        title: "Incomplete Concepts",
-        description: "Please ensure all concepts have names and definitions.",
+        title: "Missing Concept Names",
+        description: "Please ensure all concepts have names.",
         variant: "destructive"
       });
       return;
@@ -142,8 +142,28 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
 
     if (formData.learningObjectives.some(obj => !obj.trim())) {
       toast({
-        title: "Empty Learning Objectives",
-        description: "Please remove empty objectives or fill them in.",
+        title: "Missing Learning Objectives",
+        description: "Please ensure all learning objectives are filled in.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Ensure at least one concept is provided
+    if (formData.concepts.length === 0) {
+      toast({
+        title: "Missing Concepts",
+        description: "Please add at least one concept.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Ensure at least one learning objective is provided
+    if (formData.learningObjectives.filter(obj => obj.trim()).length === 0) {
+      toast({
+        title: "Missing Learning Objectives",
+        description: "Please add at least one learning objective.",
         variant: "destructive"
       });
       return;
@@ -185,7 +205,7 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
         topic: '',
         gradeLevel: '',
         sessionType: '',
-        concepts: [{ name: '', definition: '', examples: [''], commonMisconceptions: [''] }],
+        concepts: [{ name: '', examples: [''], commonMisconceptions: [''] }],
         learningObjectives: [''],
         assessmentFocus: [],
         difficultyProgression: '',
@@ -294,7 +314,7 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
             <div className="flex items-center space-x-2">
               <Target className="h-5 w-5 text-green-600" />
               <div>
-                <CardTitle>Core Concepts (2-4)</CardTitle>
+                <CardTitle>Core Concepts (2-4) *</CardTitle>
                 <CardDescription>
                   Define the key concepts students should understand
                 </CardDescription>
@@ -323,26 +343,14 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
                 )}
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Concept Name *</Label>
-                  <Input
-                    value={concept.name}
-                    onChange={(e) => updateConcept(conceptIndex, 'name', e.target.value)}
-                    placeholder="e.g., Market Segmentation"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Definition *</Label>
-                  <Textarea
-                    value={concept.definition}
-                    onChange={(e) => updateConcept(conceptIndex, 'definition', e.target.value)}
-                    placeholder="Clear definition of the concept..."
-                    rows={3}
-                    required
-                  />
-                </div>
+              <div>
+                <Label>Concept Name *</Label>
+                <Input
+                  value={concept.name}
+                  onChange={(e) => updateConcept(conceptIndex, 'name', e.target.value)}
+                  placeholder="e.g., Market Segmentation"
+                  required
+                />
               </div>
 
               <div>
@@ -436,7 +444,7 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
             <div className="flex items-center space-x-2">
               <CheckSquare className="h-5 w-5 text-purple-600" />
               <div>
-                <CardTitle>Learning Objectives (2-3)</CardTitle>
+                <CardTitle>Learning Objectives (2-3) *</CardTitle>
                 <CardDescription>
                   Specific goals students should achieve
                 </CardDescription>
@@ -455,7 +463,8 @@ export function SessionCreationForm({ onSessionCreated }: SessionCreationFormPro
                 <Input
                   value={objective}
                   onChange={(e) => updateObjective(index, e.target.value)}
-                  placeholder={`Learning objective ${index + 1}...`}
+                  placeholder={`Learning objective ${index + 1}... *`}
+                  required
                 />
               </div>
               {formData.learningObjectives.length > 1 && (

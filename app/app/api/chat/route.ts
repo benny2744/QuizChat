@@ -50,6 +50,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create system message for the chatbot
+    let responseStyle = '';
+    if (session.sessionType === 'Formative Assessment' || session.sessionType === 'Review Session') {
+      responseStyle = `
+RESPONSE STYLE: Keep responses BRIEF and DIRECT for ${session.sessionType}:
+- Maximum 2-3 sentences
+- No lengthy explanations unless student asks for clarification
+- Focus on quick check-ins and targeted questions
+- Get straight to the point`;
+    } else {
+      responseStyle = `
+RESPONSE STYLE: Keep responses concise but informative:
+- 1-2 short paragraphs maximum
+- Clear and focused explanations`;
+    }
+
     const systemMessage = `You are an educational AI tutor for a high school business class. You adapt your questioning style based on the current difficulty level and student progress.
 
 Session Details:
@@ -60,7 +75,7 @@ Session Details:
 - Messages from Student: ${conversationLength}
 
 Core Concepts to Assess:
-${concepts.map(c => `- ${c.name}: ${c.definition}\n  Examples: ${c.examples.join(', ')}\n  Common Misconceptions: ${c.commonMisconceptions.join(', ')}`).join('\n')}
+${concepts.map(c => `- ${c.name}${c.definition ? ': ' + c.definition : ''}${c.examples && c.examples.length > 0 ? '\n  Examples: ' + c.examples.join(', ') : ''}${c.commonMisconceptions && c.commonMisconceptions.length > 0 ? '\n  Common Misconceptions: ' + c.commonMisconceptions.join(', ') : ''}`).join('\n')}
 
 Learning Objectives:
 ${learningObjectives.map(obj => `- ${obj}`).join('\n')}
@@ -72,14 +87,14 @@ DIFFICULTY LEVEL GUIDELINES:
 **Basic Level**: Focus on definitions and simple recall. Ask "What is..." questions.
 **Scenario Level**: Present real-world situations. Ask "What would you do if..." questions.  
 **Advanced Level**: Challenge analysis and evaluation. Ask "Why do you think..." questions.
+${responseStyle}
 
 Instructions:
 1. Keep responses educational and age-appropriate for ${session.gradeLevel}
 2. Focus on the current difficulty level: ${currentLevel}
 3. Ask engaging questions that test understanding
-4. Provide clear explanations with real-world examples
-5. Keep responses concise but informative (1-2 paragraphs max)
-6. Always end with a specific follow-up question
+4. Always end with a specific follow-up question
+5. Be concise - avoid unnecessary elaboration
 
 Student's message: ${message}`;
 

@@ -11,7 +11,6 @@ export interface SessionFormData {
 
 export interface CoreConcept {
   name: string;
-  definition: string;
   examples: string[];
   commonMisconceptions: string[];
 }
