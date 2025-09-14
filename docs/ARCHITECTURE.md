@@ -3,19 +3,23 @@
 # Educational Chatbot Platform
 
 ## Document Information
-- **Version**: 2.0.3
+- **Version**: 3.0.0
 - **Last Updated**: September 14, 2025
-- **Architecture Status**: Phase 2 Complete + Assessment & UX Improvements Applied
-- **Technology Stack**: Next.js 14, TypeScript, PostgreSQL, Prisma
+- **Architecture Status**: Phase 3 Complete - Authentication & Multi-Subject Platform
+- **Technology Stack**: Next.js 14, TypeScript, PostgreSQL, Prisma, NextAuth.js
 
 ---
 
 ## 1. Architecture Overview
 
 ### System Type
-**Full-Stack Web Application** with real-time capabilities for educational assessment and AI-powered conversational learning.
+**Full-Stack Web Application** with authentication, real-time capabilities for educational assessment and AI-powered conversational learning across all academic subjects.
 
 ### Key Architectural Principles
+- **Authenticated Design**: Secure user management with NextAuth.js integration
+- **Multi-Subject Architecture**: Subject-agnostic framework supporting all academic disciplines
+- **Academic Integrity**: Built-in security measures preventing copy/paste operations
+- **User-Centric**: Individual teacher accounts with session ownership and limits
 - **Stateless Design**: Session state managed in database for scalability
 - **Real-time Updates**: WebSocket-like polling for live participant tracking
 - **Responsive Architecture**: Mobile-first design with progressive enhancement
@@ -110,9 +114,40 @@ app/
 
 #### Database Schema (PostgreSQL + Prisma)
 ```typescript
-// Core Models
+// Core Models with Authentication
+User {
+  id: String (UUID)
+  email: String (unique)
+  password: String (hashed)
+  name: String?
+  createdAt: DateTime
+  updatedAt: DateTime
+  // Relationships
+  sessions: Session[]
+  accounts: Account[]
+  userSessions: UserSession[]
+}
+
+// NextAuth.js Models
+Account {
+  id: String (UUID)
+  userId: String
+  type: String
+  provider: String
+  providerAccountId: String
+  // OAuth fields...
+}
+
+UserSession {
+  id: String (UUID)
+  sessionToken: String (unique)
+  userId: String
+  expires: DateTime
+}
+
 Session {
   id: String (UUID)
+  userId: String               // NEW: User ownership
   topic: String
   gradeLevel: String
   sessionType: String
@@ -123,6 +158,7 @@ Session {
   isActive: Boolean
   createdAt: DateTime
   // Relationships
+  user: User
   studentSessions: StudentSession[]
   activeParticipants: ActiveParticipant[]
 }
@@ -169,13 +205,23 @@ ChatMessage {
 
 ### 4.1 RESTful Endpoint Design
 
-#### Session Management
+#### Authentication Management
 ```typescript
-POST   /api/sessions              # Create new session
-GET    /api/sessions/:id          # Get session details
-PUT    /api/sessions/:id          # Update session
-DELETE /api/sessions/:id          # Delete session
-GET    /api/sessions/by-code/:code # Join session by code
+POST   /api/auth/signin           # User login
+POST   /api/auth/signup          # User registration
+POST   /api/auth/signout         # User logout
+GET    /api/auth/session         # Get current session
+POST   /api/auth/callback        # NextAuth callback
+```
+
+#### Session Management (Protected)
+```typescript
+POST   /api/sessions              # Create new session (requires auth)
+GET    /api/sessions              # Get user's sessions (requires auth)
+GET    /api/sessions/:id          # Get session details (requires auth)
+PUT    /api/sessions/:id          # Update session (requires auth)
+DELETE /api/sessions/:id          # Delete session (requires auth)
+GET    /api/sessions/by-code/:code # Join session by code (public)
 
 // Participant Management
 GET    /api/sessions/:id/participants    # Get active participants
@@ -224,14 +270,19 @@ POST   /api/chat                 # Send message & get AI response
 ## 6. Security Architecture
 
 ### Authentication & Authorization
-- **No user authentication required** (by design for classroom ease)
-- **Session-based access control** via 6-digit session codes
+- **Teacher Authentication Required**: NextAuth.js with credential-based authentication
+- **Secure Password Storage**: bcryptjs hashing for user passwords
+- **Protected Routes**: Middleware-based route protection for teacher dashboard
+- **Session-based Student Access**: 6-digit session codes for student participation (no auth required)
 - **Input validation** on all API endpoints
 - **SQL injection prevention** via Prisma ORM
 
 ### Data Protection
-- **No PII collection** beyond first names
-- **Session data isolation** (students only access their own data)
+- **User Data Isolation**: Teachers only access their own sessions and data
+- **Academic Integrity**: Copy/paste prevention in student interfaces
+- **Secure Credential Handling**: Encrypted password storage and secure session tokens
+- **Session Ownership**: User-based session access control and validation
+- **No Student PII**: Only first names collected for student participation
 - **Automatic session cleanup** (configurable retention periods)
 - **Environment variable protection** for API keys
 

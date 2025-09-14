@@ -1,12 +1,14 @@
 
-# QuizChat - Educational Chatbot Platform 🎓
+# QuizChat - Universal Educational Chatbot Platform 🎓
 
-An AI-powered educational chatbot platform designed for high school business classes, enabling teachers to conduct dynamic assessments and interactive learning sessions with 20-30 students simultaneously.
+An AI-powered educational chatbot platform designed for ALL academic subjects, featuring secure teacher authentication and enabling educators to conduct dynamic assessments and interactive learning sessions with 20-30 students simultaneously.
 
 ## 🌟 Features
 
 ### For Teachers
-- **Session Creation System**: Structured forms with comprehensive configuration options
+- **Secure Authentication**: Account creation, login system, and protected dashboard access
+- **Universal Subject Support**: Create sessions for any academic discipline (Math, Science, History, English, etc.)
+- **Session Management**: 10-session limit per teacher with organized dashboard
 - **Real-time Monitoring**: Live participant tracking and session statistics
 - **Assessment Scoring**: Automated understanding score calculations based on chat interactions
 - **Report Generation**: Individual student reports (.md) and consolidated CSV exports
@@ -14,16 +16,18 @@ An AI-powered educational chatbot platform designed for high school business cla
 
 ### For Students  
 - **Simple Join Process**: No authentication required - just name and session code
-- **Interactive Chat**: Real-time conversation with AI tutor
+- **Interactive Chat**: Real-time conversation with AI tutor across any subject
 - **Progressive Difficulty**: Automatic scaling from Basic → Scenario → Advanced levels
+- **Academic Integrity**: Copy/paste prevention to maintain assessment validity
 - **Mobile Responsive**: Works seamlessly across all devices
 
 ### AI Intelligence
-- **Context-Aware Responses**: Tailored to session configuration and student performance
-- **Business Focus**: Real-world examples for marketing, finance, operations, entrepreneurship
+- **Universal Subject Support**: Context-aware responses for any academic discipline
+- **Subject-Appropriate Content**: Real-world examples tailored to the specific topic and grade level
 - **Adaptive Learning**: Difficulty adjustment based on student engagement and understanding
+- **Educational Focus**: Generic educational framework supporting all subjects
 
-## 🚀 Current Status: Production Ready (v2.0.3)
+## 🚀 Current Status: Production Ready (v3.0.0)
 
 ✅ **Phase 1 Complete** - Core Platform
 - Session creation and management
@@ -36,15 +40,18 @@ An AI-powered educational chatbot platform designed for high school business cla
 - Comprehensive analytics dashboard
 - Session time tracking and management
 
-✅ **Recent Fixes** - Session Management
-- Resolved critical session stopping functionality
-- Enhanced error handling and system reliability
-- Production-ready deployment
+✅ **Phase 3 Complete** - Authentication & Multi-Subject Platform
+- Secure teacher authentication with account management
+- Universal subject support for all academic disciplines
+- 10-session limit per teacher with management system
+- Copy/paste prevention for academic integrity
+- Subject-agnostic architecture and interface
 
 ## 🛠️ Technology Stack
 
 - **Frontend**: Next.js 14, TypeScript, Tailwind CSS, shadcn/ui
 - **Backend**: Next.js API Routes, PostgreSQL, Prisma ORM
+- **Authentication**: NextAuth.js with credential provider and bcryptjs
 - **AI Integration**: AbacusAI API (GPT-4.1-mini compatible)
 - **Deployment**: Cloud-ready (Vercel, AWS, Azure compatible)
 
@@ -63,14 +70,14 @@ An AI-powered educational chatbot platform designed for high school business cla
 - **Unit Assessment**: Comprehensive topic evaluation
 - **Final Review**: Cumulative knowledge assessment
 
-## 📈 Assessment Focus Areas
+## 📈 Universal Assessment Focus Areas
 
-- Vocabulary Understanding
-- Concept Application
-- Critical Thinking
-- Problem Solving
-- Case Study Analysis
-- Real-world Connections
+- Vocabulary Understanding (applicable to all subjects)
+- Concept Application (mathematical, scientific, literary, historical, etc.)
+- Critical Thinking (analysis and evaluation across disciplines)
+- Problem Solving (STEM, social studies, language arts)
+- Case Study Analysis (real-world applications in any subject)
+- Subject Connections (interdisciplinary learning)
 
 ## 🔧 Getting Started
 

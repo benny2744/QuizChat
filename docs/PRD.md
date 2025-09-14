@@ -1,72 +1,93 @@
 
 # Product Requirements Document (PRD)
-# Educational Chatbot for High School Business Classes
+# Universal Educational Chatbot Platform
 
 ## Document Information
-- **Version**: 2.0.3
+- **Version**: 3.0.0
 - **Last Updated**: September 14, 2025
-- **Project Status**: Phase 2 Complete - Production Ready with Enhanced Assessment System
-- **Next Phase**: Optional Phase 3 - Advanced Features & Integrations
+- **Project Status**: Phase 3 Complete - Authentication & Multi-Subject Platform
+- **Next Phase**: Optional Phase 4 - Advanced Integrations & Mobile Apps
 
 ---
 
 ## 1. Executive Summary
 
 ### Vision
-Create an AI-powered educational chatbot that facilitates dynamic warm-up and exit ticket questions for high school business classes, enabling teachers to conduct real-time formative assessments with 20-30 students simultaneously.
+Create a universal AI-powered educational chatbot platform that facilitates dynamic assessments and interactive learning across ALL academic subjects, with secure teacher authentication and comprehensive session management, enabling educators to conduct real-time formative assessments with 20-30 students simultaneously.
 
 ### Success Metrics
-- Support 20-30 concurrent students per session
-- Generate contextually relevant questions with progressive difficulty
-- Provide real-time session monitoring for teachers
+- Support 20-30 concurrent students per session across any subject
+- Generate contextually relevant questions with progressive difficulty for all academic disciplines
+- Provide secure teacher accounts with session ownership and limits
+- Maintain academic integrity through copy/paste prevention
 - Export comprehensive assessment reports (individual .md files + consolidated CSV)
+- Support unlimited subjects and topics through flexible configuration
 
 ---
 
 ## 2. Product Overview
 
 ### Core Value Proposition
-- **For Teachers**: Streamlined session creation with structured templates, real-time student monitoring, and automated assessment generation
-- **For Students**: Interactive learning experience with personalized difficulty progression and immediate feedback
-- **For Schools**: Scalable assessment tool that enhances classroom engagement and provides data-driven insights
+- **For Teachers**: Secure account management, streamlined session creation across all subjects, real-time student monitoring, and automated assessment generation with 10-session management system
+- **For Students**: Interactive learning experience with personalized difficulty progression, immediate feedback, and academic integrity safeguards
+- **For Schools**: Universal assessment tool supporting all academic subjects, scalable deployment with teacher authentication, enhanced classroom engagement and data-driven insights
 
 ### Target Users
-- **Primary**: High school business teachers (grades 9-12)
-- **Secondary**: Students in business classes
-- **Stakeholders**: School administrators, curriculum coordinators
+- **Primary**: High school teachers across ALL academic subjects (grades 9-12)
+- **Secondary**: Middle school educators and college instructors
+- **Students**: Learners in any academic subject area
+- **Stakeholders**: School administrators, curriculum coordinators, IT departments
 
 ---
 
 ## 3. Functional Requirements
 
-### 3.1 Teacher Dashboard
+### 3.1 Authentication & User Management
+- **Teacher Authentication**
+  - ✅ Secure signup process with email and password validation
+  - ✅ Login system with encrypted credential storage
+  - ✅ Protected dashboard access requiring authentication
+  - ✅ Account profile management and settings
+  - ✅ Secure session management with automatic token refresh
+
+### 3.2 Teacher Dashboard
 - **Session Creation**
-  - ✅ Structured form with mandatory concept names and learning objectives
+  - ✅ Subject-agnostic structured forms for any academic discipline
+  - ✅ Mandatory concept names and learning objectives
   - ✅ Configurable session types (Pre-Assessment, Formative Check, Review Session, Unit Assessment, Final Review)
-  - ✅ Assessment focus area selection (Vocabulary Understanding, Concept Application, Critical Thinking, etc.)
+  - ✅ Universal assessment focus areas applicable to all subjects
   - ✅ Difficulty progression settings (Gradual, Adaptive, Mixed, Fixed Level)
   - ✅ Additional context for recent activities or upcoming topics
 
 - **Session Management**
+  - ✅ 10-session limit per teacher account with deletion prompts
+  - ✅ User-specific session filtering and ownership validation
   - ✅ Real-time participant monitoring
   - ✅ Live session statistics and progress tracking
   - ✅ Session control (start, pause, end)
-  - 🔄 Assessment scoring and feedback generation (Phase 2)
+  - ✅ Assessment scoring and feedback generation
 
-### 3.2 Student Interface
+### 3.3 Student Interface
 - **Session Participation**
-  - ✅ Simple join process (name + session code)
+  - ✅ Simple join process (name + session code, no authentication required)
   - ✅ Real-time chat interface with AI tutor
   - ✅ Progressive difficulty scaling (Basic → Scenario → Advanced)
   - ✅ Responsive design for various devices
 
-### 3.3 AI Chatbot Intelligence
+- **Academic Integrity Features**
+  - ✅ Copy/paste prevention in chat interface and input fields
+  - ✅ Right-click context menu disabled
+  - ✅ Keyboard shortcut prevention (Ctrl+C, Ctrl+V)
+  - ✅ Visual indicators for academic integrity measures
+
+### 3.4 AI Chatbot Intelligence
 - **Conversation Management**
-  - ✅ Context-aware responses based on session configuration
-  - ✅ **UPDATED**: Concise responses (2-3 sentences for formative/review sessions)
+  - ✅ Context-aware responses based on session configuration across all subjects
+  - ✅ Concise responses (2-3 sentences for formative/review sessions)
   - ✅ Progressive difficulty adjustment based on student performance
-  - ✅ Real-world business examples and scenarios
-  - ✅ Age-appropriate content for high school students
+  - ✅ Subject-appropriate examples and scenarios for any academic discipline
+  - ✅ Age-appropriate content adaptable to different grade levels
+  - ✅ Universal educational terminology and concepts
 
 ### 3.4 Assessment & Reporting
 - **Data Collection**

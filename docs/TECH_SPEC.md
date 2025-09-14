@@ -3,9 +3,9 @@
 # Educational Chatbot Platform
 
 ## Document Information
-- **Version**: 2.0.3
+- **Version**: 3.0.0
 - **Last Updated**: September 14, 2025
-- **Implementation Status**: Phase 2 Complete + Assessment & UX Improvements
+- **Implementation Status**: Phase 3 Complete - Authentication & Multi-Subject Platform
 - **Development Team**: AI-Assisted Development
 
 ---
@@ -23,7 +23,8 @@
 ### Backend
 - **Runtime**: Node.js (Next.js API Routes)
 - **Database**: PostgreSQL with Prisma ORM 6.7.0
-- **Authentication**: Session-based (no user auth required)
+- **Authentication**: NextAuth.js 4.24.11 with credential provider
+- **Password Hashing**: bcryptjs 2.4.3
 - **External APIs**: AbacusAI LLM API (OpenAI-compatible)
 
 ### Development Tools
@@ -50,8 +51,56 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Authentication Models (NextAuth.js)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model UserSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_sessions")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  password      String
+  name          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  // Relations
+  accounts      Account[]
+  sessions      UserSession[]
+  teachingSessions Session[]  // Teaching sessions created by this user
+  
+  @@map("users")
+}
+
 model Session {
   id                    String               @id @default(cuid())
+  userId                String               // NEW: User ownership
   topic                 String
   gradeLevel           String
   sessionType          String
@@ -67,6 +116,7 @@ model Session {
   endTime              DateTime?
   
   // Relations
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   studentSessions      StudentSession[]
   activeParticipants   ActiveParticipant[]
   
