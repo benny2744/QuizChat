@@ -49,16 +49,63 @@ export function StudentChat({ sessionId, studentName, sessionInfo }: StudentChat
   }, [messages]);
 
   useEffect(() => {
-    // Send welcome message when chat loads
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome',
-      role: 'assistant',
-      content: `Hello ${studentName}! 👋 Welcome to your ${sessionInfo.topic} session. I'm your AI learning assistant, and I'm here to help you explore business concepts through interactive questions and scenarios.\n\nWe'll start with some basic questions and gradually increase the difficulty based on your responses. Are you ready to begin your learning journey?`,
-      timestamp: new Date(),
-      questionLevel: 'Basic'
+    // Load existing chat history if available
+    const loadChatHistory = async () => {
+      try {
+        const response = await fetch(`/api/sessions/${sessionId}/chat-history?studentName=${encodeURIComponent(studentName)}`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.chatHistory && data.chatHistory.length > 0) {
+            // Convert timestamps and load existing conversation
+            const historyMessages = data.chatHistory.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }));
+            
+            setMessages(historyMessages);
+            setCurrentLevel(data.currentLevel || 'Basic');
+            setHasMasteredTopic(data.hasMasteredTopic || false);
+            setAdvancedQuestionsAnswered(data.advancedQuestionsAnswered || 0);
+          } else {
+            // No existing history, send welcome message
+            const welcomeMessage: ChatMessage = {
+              id: 'welcome',
+              role: 'assistant',
+              content: `Hello ${studentName}! 👋 Welcome to your ${sessionInfo.topic} session. I'm your AI learning assistant, and I'm here to help you explore concepts through interactive questions and scenarios.\n\nWe'll start with some basic questions and gradually increase the difficulty based on your responses. Are you ready to begin your learning journey?`,
+              timestamp: new Date(),
+              questionLevel: 'Basic'
+            };
+            setMessages([welcomeMessage]);
+          }
+        } else {
+          // Fallback to welcome message if API fails
+          const welcomeMessage: ChatMessage = {
+            id: 'welcome',
+            role: 'assistant',
+            content: `Hello ${studentName}! 👋 Welcome to your ${sessionInfo.topic} session. I'm your AI learning assistant, and I'm here to help you explore concepts through interactive questions and scenarios.\n\nWe'll start with some basic questions and gradually increase the difficulty based on your responses. Are you ready to begin your learning journey?`,
+            timestamp: new Date(),
+            questionLevel: 'Basic'
+          };
+          setMessages([welcomeMessage]);
+        }
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+        // Fallback to welcome message
+        const welcomeMessage: ChatMessage = {
+          id: 'welcome',
+          role: 'assistant',
+          content: `Hello ${studentName}! 👋 Welcome to your ${sessionInfo.topic} session. I'm your AI learning assistant, and I'm here to help you explore concepts through interactive questions and scenarios.\n\nWe'll start with some basic questions and gradually increase the difficulty based on your responses. Are you ready to begin your learning journey?`,
+          timestamp: new Date(),
+          questionLevel: 'Basic'
+        };
+        setMessages([welcomeMessage]);
+      }
     };
-    setMessages([welcomeMessage]);
-  }, [studentName, sessionInfo.topic]);
+
+    loadChatHistory();
+  }, [sessionId, studentName, sessionInfo.topic]);
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -48,6 +48,10 @@ export async function POST(request: NextRequest) {
 
     // Check if student has mastered the topic (3+ advanced answers)
     const hasMasteredTopic = advancedResponses >= 3;
+
+    // Prepare conversation context for LLM (limit to last 20 messages for optimal context window)
+    const MAX_CONTEXT_MESSAGES = 20;
+    const recentChatHistory = existingChatLog.slice(-MAX_CONTEXT_MESSAGES);
     
     // Determine if we should progress to the next level
     let nextLevel = currentLevel;
@@ -77,7 +81,7 @@ RESPONSE STYLE: Keep responses concise but informative:
     let systemMessage = '';
     
     if (hasMasteredTopic) {
-      systemMessage = `You are an educational AI tutor for a high school business class. The student has demonstrated excellent mastery by successfully answering 3 or more advanced-level questions about ${session.topic}.
+      systemMessage = `You are an educational AI tutor. The student has demonstrated excellent mastery by successfully answering 3 or more advanced-level questions about ${session.topic}.
 
 IMPORTANT: This student has achieved mastery. Your response should:
 1. Congratulate them on their excellent understanding of ${session.topic}
@@ -94,7 +98,10 @@ Session Details:
 
 Student's final message: ${message}`;
     } else {
-      systemMessage = `You are an educational AI tutor for a high school business class. You adapt your questioning style based on the current difficulty level and student progress.
+      systemMessage = `You are an AI tutor that generates questions for learners in a structured progression of difficulty. You follow Bloom's Revised Taxonomy to guide question design:
+- Level 1–2: Remembering & Understanding (definitions, concept recall, explain in own words)
+- Level 3–4: Applying & Analyzing (apply concepts in scenarios, interpret data, compare/contrast ideas)
+- Level 5–6: Evaluating & Creating (judgment, critique, defend a position, design a solution)
 
 Session Details:
 - Topic: ${session.topic}
@@ -113,21 +120,43 @@ ${learningObjectives.map(obj => `- ${obj}`).join('\n')}
 Assessment Focus Areas:
 ${assessmentFocus.map(focus => `- ${focus}`).join('\n')}
 
-DIFFICULTY LEVEL GUIDELINES:
-**Basic Level**: Focus on definitions and simple recall. Ask "What is..." questions.
-**Scenario Level**: Present real-world situations. Ask "What would you do if..." questions.  
-**Advanced Level**: Challenge analysis and evaluation. Ask "Why do you think..." questions.
+BLOOM'S TAXONOMY LEVEL GUIDELINES:
+**Basic Level (Remembering & Understanding)**: Focus on definitions, concept recall, and basic comprehension. Ask students to remember facts or explain concepts in their own words.
+**Scenario Level (Applying & Analyzing)**: Present real-world situations where students apply concepts, analyze data, or compare/contrast different ideas.
+**Advanced Level (Evaluating & Creating)**: Challenge students to make judgments, critique ideas, defend positions, or create solutions.
+
 ${responseStyle}
 
-Instructions:
-1. Keep responses educational and age-appropriate for ${session.gradeLevel}
-2. Focus on the current difficulty level: ${currentLevel}
-3. Ask engaging questions that test understanding
-4. Always end with a specific follow-up question
-5. Be concise - avoid unnecessary elaboration
+CRITICAL RULES:
+1. Clear progression from easier → harder questions based on Bloom's taxonomy
+2. NEVER repeat or rephrase previously asked questions - track what has been discussed
+3. Never circle back to earlier levels unless specifically instructed
+4. Questions should become deeper and more complex over time
+5. Keep responses age-appropriate for ${session.gradeLevel}
+6. Focus on the current difficulty level: ${currentLevel}
+7. Always end with a specific follow-up question that advances learning
+8. Be concise and educational - avoid unnecessary elaboration
+
+Remember: You have access to the full conversation history, so build upon previous discussions and avoid repetition.
 
 Student's message: ${message}`;
     }
+
+    // Prepare messages with conversation context for LLM
+    const messages = [
+      { role: 'system', content: systemMessage }
+    ];
+
+    // Add recent conversation history for context
+    recentChatHistory.forEach(msg => {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    });
+
+    // Add current user message
+    messages.push({ role: 'user', content: message });
 
     // Call LLM API without streaming to avoid duplication issues
     const response = await fetch('https://apps.abacus.ai/v1/chat/completions', {
@@ -138,10 +167,7 @@ Student's message: ${message}`;
       },
       body: JSON.stringify({
         model: 'gpt-4.1-mini',
-        messages: [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: message }
-        ],
+        messages: messages,
         stream: false,
         max_tokens: 1000,
         temperature: 0.7
