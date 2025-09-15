@@ -35,7 +35,7 @@ An AI-powered educational chatbot platform designed for ALL academic subjects, f
 1. Navigate to teacher dashboard
 2. Fill in topic, grade level, and learning objectives
 <img src="./images/Create_session.png" alt="Session Creation" width="500">
-4. Configure core concepts and assessment focus
+4. Configure core concepts and assessment focus<br>
 5. Generate session code and share with students
 
 ### Joining a Session (Student)  
