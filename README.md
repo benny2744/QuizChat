@@ -29,6 +29,36 @@ An AI-powered educational chatbot platform designed for ALL academic subjects, f
 - **Adaptive Learning**: Difficulty adjustment based on student engagement and understanding
 - **Enhanced Reliability**: Robust error handling and optimized chat functionality
 
+## 🎮 Usage Examples
+
+### Creating a Session (Teacher)
+1. Navigate to teacher dashboard
+2. Fill in topic, grade level, and learning objectives
+3. Configure core concepts and assessment focus
+4. Generate session code and share with students
+
+### Joining a Session (Student)  
+1. Visit student interface
+2. Enter name and 6-digit session code
+3. Start chatting with AI tutor
+4. Progress through difficulty levels automatically
+
+### Generating Reports (Teacher)
+1. Complete session and view results dashboard
+2. Generate individual student assessments (.md files)
+3. Export consolidated class data (CSV format)
+4. Download analytics for gradebook integration
+
+## 🔮 Future Roadmap
+
+### Phase 3 (Future Enhancements)
+- LMS integration (Canvas, Google Classroom, Schoology)
+- Mobile applications (iOS/Android)
+- Advanced AI features (sentiment analysis, learning paths)
+- Multi-language support
+- Real-time WebSocket communications
+
+
 ## 🚀 Current Status: Production Ready (v3.1.0)
 
 ✅ **Phase 1 Complete** - Core Platform
@@ -158,35 +188,6 @@ Comprehensive documentation is available in the `/docs` directory:
 - **[Architecture Document](docs/ARCHITECTURE.md)** - System design and technical architecture  
 - **[Technical Specifications](docs/TECH_SPEC.md)** - Implementation details and API documentation
 - **[Changelog](docs/CHANGELOG.md)** - Version history and feature updates
-
-## 🎮 Usage Examples
-
-### Creating a Session (Teacher)
-1. Navigate to teacher dashboard
-2. Fill in topic, grade level, and learning objectives
-3. Configure core concepts and assessment focus
-4. Generate session code and share with students
-
-### Joining a Session (Student)  
-1. Visit student interface
-2. Enter name and 6-digit session code
-3. Start chatting with AI tutor
-4. Progress through difficulty levels automatically
-
-### Generating Reports (Teacher)
-1. Complete session and view results dashboard
-2. Generate individual student assessments (.md files)
-3. Export consolidated class data (CSV format)
-4. Download analytics for gradebook integration
-
-## 🔮 Future Roadmap
-
-### Phase 3 (Future Enhancements)
-- LMS integration (Canvas, Google Classroom, Schoology)
-- Mobile applications (iOS/Android)
-- Advanced AI features (sentiment analysis, learning paths)
-- Multi-language support
-- Real-time WebSocket communications
 
 ## 🤝 Contributing
 
